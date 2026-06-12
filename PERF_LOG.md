@@ -64,14 +64,20 @@ Pour assurer la validité des métriques, une étude comparative des outils de c
 
 ### Calculs utilisés pour les indicateurs de performance
 
-- **Speedup global (vs MATLAB)** :  
-  \( \text{Speedup}_{\text{global}} = \frac{T_{\text{MATLAB}}}{T_{\text{Version}}} \)
+- **Speedup global (vs MATLAB) :**
+\[
+\text{Speedup}_{\text{global}} = \frac{T_{\text{MATLAB}}}{T_{\text{Version}}}
+\]
 
-- **Gain vs Baseline Python** :  
-  \( \text{Gain}_{\text{vs\_baseline}} = \frac{T_{\text{Baseline Python}}}{T_{\text{Version Optimisée}}} \)
+- **Gain vs Baseline Python :**
+\[
+\text{Gain}_{\text{vs\_baseline}} = \frac{T_{\text{Baseline Python}}}{T_{\text{Version Optimisée}}}
+\]
 
-- **Réduction du temps de calcul** :  
-  \( \text{Réduction} = \frac{T_{\text{Initial}} - T_{\text{Optimisé}}}{T_{\text{Initial}}} \times 100 \)
+- **Réduction du temps de calcul :**
+\[
+\text{Réduction} = \frac{T_{\text{Initial}} - T_{\text{Optimisé}}}{T_{\text{Initial}}} \times 100
+\]
 
 ## 3. Ressources documentaires et veille technique
 
