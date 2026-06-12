@@ -8,32 +8,31 @@
 
 Ce premier tableau retrace les premiers essais du stage. Les temps ont été mesurés en lançant le script une seule fois, sans exécution à vide au démarrage (pas de warm-up). Ce tableau prend donc en compte le temps que met Python à charger les bibliothèques et à compiler le code la toute première fois.
 
-| Version | Env. | Techno | Temps | Speedup baseline | Speedup MATLAB | Réduction | Analyse | Suite |
-|---|---|---|---:|---:|---:|---:|---|---|
-| `beamform_sorbet_micro.m` | MATLAB | Référence | 28.87 s | N/A | Référence | N/A | Code original de référence du laboratoire. | Point de départ. |
-| `beamform_sorbet_micro.py`<br>*(Baseline)* | Python CPU | `scipy.interpolate.interp1d` | 19.45 s | 1.00x | 1.48x | 0.00 % | Traduction ligne par ligne du code MATLAB.<br>Corrélation : 0.999995. | Profilage avec `cProfile`. |
-| Profilage baseline | Analyse CPU | `cProfile` + `matplotlib` | N/A | N/A | N/A | N/A | L’interpolation SciPy prend plus de 7 s à cause de la création répétée d’objets. | Remplacer par `numpy.interp`. |
-| Optimisation 1 | Python CPU | `numpy.interp` | 15.90 s | 1.22x | 1.82x | 18.25 % | NumPy évite les objets lourds de SciPy. | Nouveau profilage. |
-| Profilage opt. 1 | Analyse CPU | `cProfile` + CSV | N/A | N/A | N/A | N/A | La boucle `for` principale prend 12.67 s sur 30 720 répétitions. | Essai avec Threads. |
-| Optimisation 2 | Python CPU MT | `ThreadPoolExecutor` | 18.92 s | 0.86x | 1.53x | -34.46 % | Régression à cause du GIL. | Essai Numba. |
-| Profilage threads | Analyse CPU | `cProfile` threads + CSV | N/A | N/A | N/A | N/A | `wait` et `lock.acquire` cumulent plus de 7 s d’attente. | Passage à `@njit(parallel=True)`. |
-| Optimisation 3 | Python CPU JIT | `numba` (`@njit(parallel=True)`) | 30.94 s | 0.63x | 0.93x | -59.07 % | Le premier lancement inclut la compilation JIT. | Diagnostic Numba. |
-| Diag. Numba | Analyse CPU | `parallel_diagnostics(level=4)` | N/A | N/A | N/A | N/A | Échec de fusion de boucles (`fusion failed`), saturation mémoire. | Passage au GPU. |
-| État de l’art | Analyse | Outils GPU | N/A | N/A | N/A | N/A | Étude de JAX, cuPyNumeric et CuPy. | Choix de CuPy. |
-| Optimisation 5 | Python GPU | `cupy` float32 | 3.74 s | 5.20x | 7.72x | 80.77 % | Calcul déplacé sur GPU avec précision simple. | Profilage GPU. |
-| Étape de profilage | Analyse CPU/GPU | `cProfile` + PNG | Analyse | N/A | N/A | N/A | `cupy.asarray` prend 2.159 s, interpolation GPU 0.408 s. | Essai des streams CUDA. |
-| Optimisation finalisée | Python GPU async | `cupy.cuda.Stream` | 2.60 s | 7.48x | 11.10x | 90.99 % | Chevauchement transfert/calcul avec streams. | Nettoyage des boucles. |
-| Optimisation VRAM fine | Python GPU async v2 | `cp.ascontiguousarray` | 2.42 s | 8.08x | 11.93x | 91.62 % | `arange` sort de la boucle, données contiguës. | Fin de l’étude mono-GPU. |
-| Multi-GPU A | Windows | `cuPyNumeric` | Bloqué | N/A | N/A | N/A | Installation impossible sur Windows natif. | Test sous WSL2. |
-| Multi-GPU B | Linux WSL2 | `cuPyNumeric` | Abandon | N/A | N/A | N/A | `CUDA_ERROR_OUT_OF_MEMORY` et besoin de Python 3.10+. | Piste abandonnée. |
-| Multi-GPU C | Windows | `JAX` | Échec | N/A | N/A | N/A | `TypeError: object does not support item assignment`. | Piste écartée. |
-| Perspectives | Python / C++ | Kernels CUDA custom | À déterminer | N/A | N/A | N/A | Fusionner indices, décalages et interpolation dans un kernel CUDA unique. | Ouverture rapport. |
+| Version | Env. | Techno | Temps | vs Base | vs MATLAB | Gain % |
+|---|---|---|---:|---:|---:|---:|
+| `beamform_sorbet_micro.m` | MATLAB | Réf. | 28.87 s | N/A | Réf. | N/A |
+| `beamform_sorbet_micro.py`<br>*(Base)* | Py CPU | `scipy.interp1d` | 19.45 s | 1.00x | 1.48x | 0.00 % |
+| Profilage base | Ana. CPU | `cProfile` + `matplotlib` | N/A | N/A | N/A | N/A |
+| Opt. 1 | Py CPU | `numpy.interp` | 15.90 s | 1.22x | 1.82x | 18.25 % |
+| Profilage 1 | Ana. CPU | `cProfile` + CSV | N/A | N/A | N/A | N/A |
+| Opt. 2 | Py CPU MT | `ThreadPoolExecutor` | 18.92 s | 0.86x | 1.53x | -34.46 % |
+| Profilage MT | Ana. CPU | `cProfile` + CSV | N/A | N/A | N/A | N/A |
+| Opt. 3 | Py JIT | `numba` | 30.94 s | 0.63x | 0.93x | -59.07 % |
+| Diag. Numba | Ana. CPU | `parallel_diagnostics` | N/A | N/A | N/A | N/A |
+| Opt. GPU | Py GPU | `cupy` float32 | 3.74 s | 5.20x | 7.72x | 80.77 % |
+| Profilage GPU | Ana. CPU/GPU | `cProfile` + PNG | N/A | N/A | N/A | N/A |
+| Final | Py GPU async | `cupy.cuda.Stream` | 2.60 s | 7.48x | 11.10x | 90.99 % |
+| VRAM | Py GPU async v2 | `cp.ascontiguousarray` | 2.42 s | 8.08x | 11.93x | 91.62 % |
+| Multi-GPU A | Windows | `cuPyNumeric` | Bloqué | N/A | N/A | N/A |
+| Multi-GPU B | Linux WSL2 | `cuPyNumeric` | Abandon | N/A | N/A | N/A |
+| Multi-GPU C | Windows | `JAX` | Échec | N/A | N/A | N/A |
+| Perspectives | Python / C++ | Kernels CUDA custom | À déterminer | N/A | N/A | N/A |
 
 ## 2. Validation des méthodes de mesure temporelle
 
 Pour assurer la validité des métriques, une étude comparative des outils de chronométrage intégrés à Python a été menée afin de sélectionner l’indicateur le plus stable face aux variations de l’ordinateur d’exploitation.
 
-| Outil | Documentation | Validé | Raison |
+| Outil | Doc. | Validé | Raison |
 |---|---|---|---|
 | `time.time()` | [`time`](https://docs.python.org/3/library/time.html#time.time) | Oui | Donne l’heure système, mais peut être affecté par une resynchronisation de l’horloge. |
 | `timeit.timeit()` | [`timeit`](https://docs.python.org/3/library/timeit.html) | Non | Adapté aux petites portions de code, pas à un algorithme complet. |
@@ -68,7 +67,7 @@ Cette section rassemble les documents, liens officiels et présentations d’ing
   Référence : [Guide S. Robert](https://blog.stephane-robert.info/docs/developper/programmation/python/linting/)
 
 ### Outils testés pour le Multi-GPU
-- **cuPyNumeric** : outil NVIDIA étudié pour la distribution de calculs sur plusieurs GPU.  
+- **cuPyNumeric** : outil étudié pour la distribution de calculs sur plusieurs GPU.  
   Référence : [Dépôt officiel cuPyNumeric](https://github.com/nv-legate/cupynumeric)
 
 ## 4. Réorganisation du code et bilan final des performances
@@ -80,7 +79,6 @@ Le code a été séparé en deux fichiers :
 2. `src/beamformer.py` : classe `Beamformer` avec appel `.das(rf, method='...')`.
 
 ### Protocole de mesure retenu
-
 Le script final utilise un protocole inspiré du CNES :
 - Un warm-up non chronométré.
 - Une boucle de 5 répétitions.
@@ -90,9 +88,9 @@ Le script final utilise un protocole inspiré du CNES :
 
 Grâce à la centralisation de l’architecture, à la suppression des allocations répétitives dans les boucles et au nettoyage des variables intermédiaires, les temps de traitement ont été réduits sur tous les moteurs de calcul.
 
-| Rang | Moteur | Matériel | Temps | Speedup MATLAB | Gain vs Baseline | Réduction vs MATLAB |
+| Rang | Moteur | Matériel | Temps | Speedup MATLAB | Gain vs Base | Réduction vs MATLAB |
 |---|---|---|---:|---:|---:|---:|
-| Réf | MATLAB | CPU standard | 28.87 s | 1.00x | N/A | Référence |
+| Réf | MATLAB | CPU standard | 28.87 s | 1.00x | N/A | Réf. |
 | #1 | `gpu_block` | GPU CUDA standard | 1.67 s | 17.31x | 6.33x | -94.22 % |
 | #2 | `gpu_streams` | GPU CUDA + streams | 1.71 s | 16.90x | 6.18x | -94.08 % |
 | #3 | `numba` | CPU JIT parallèle | 8.15 s | 3.54x | 1.29x | -71.75 % |
