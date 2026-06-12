@@ -28,6 +28,29 @@ Ce premier tableau retrace les premiers essais du stage. Les temps ont été mes
 | Multi-GPU C | Windows | `JAX` | Échec | N/A | N/A | N/A |
 | Perspectives | Python / C++ | Kernels CUDA custom | À déterminer | N/A | N/A | N/A |
 
+### Détails techniques
+
+| Version | Analyse | Suite |
+|---|---|---|
+| `beamform_sorbet_micro.m` | Code original de référence fourni par le laboratoire. | Point de départ de l’étude. |
+| `beamform_sorbet_micro.py`<br>*(Base)* | Traduction ligne par ligne du code MATLAB en Python. Corrélation : 0.999995. | Premier profilage avec `cProfile`. |
+| Profilage base | La fonction d’interpolation SciPy prend plus de 7 s à cause de la création répétée d’objets. | Remplacement par `numpy.interp`. |
+| Opt. 1 | Le calcul direct avec NumPy évite les objets lourds. | Nouveau profilage. |
+| Profilage 1 | La boucle `for` principale en Python se répète 30 720 fois et prend 12.67 s. | Essai de parallélisation avec Threads. |
+| Opt. 2 | Les threads se bloquent à cause du GIL. | Essai de Numba. |
+| Profilage MT | Les fonctions de blocage des threads cumulent plus de 7 s d’attente. | Passage à `@njit(parallel=True)`. |
+| Opt. 3 | Le premier lancement inclut le temps de compilation Numba. | Utilisation de `parallel_diagnostics`. |
+| Diag. Numba | La fusion automatique des boucles a échoué et la mémoire RAM est saturée par trop de petits tableaux. | Passage au GPU. |
+| Étude de l’état de l’art | Étude de JAX, cuPyNumeric et CuPy pour le calcul GPU. | Choix de CuPy. |
+| Opt. GPU | Passage des calculs sur la carte graphique avec précision simple (`float32`). | Profilage GPU. |
+| Profilage GPU | L’envoi des données vers le GPU (`cupy.asarray`) prend le plus de temps. | Essai des streams CUDA. |
+| Final | Utilisation des Streams pour faire calcul et transfert en parallèle. | Nettoyage des boucles. |
+| VRAM | `arange` sorti de la boucle et données contiguës en mémoire. | Fin de l’étude mono-GPU. |
+| Multi-GPU A | `cuPyNumeric` impossible à installer sur Windows natif. | Test sous WSL2. |
+| Multi-GPU B | `cuPyNumeric` provoque des erreurs mémoire sous WSL2 et demande Python 3.10+. | Piste abandonnée. |
+| Multi-GPU C | `JAX` interdit la modification directe des tableaux. | Piste écartée. |
+| Perspectives | Idée de regrouper indices, décalages et interpolation dans un kernel CUDA unique. | Ouverture pour la suite. |
+
 ## 2. Validation des méthodes de mesure temporelle
 
 Pour assurer la validité des métriques, une étude comparative des outils de chronométrage intégrés à Python a été menée afin de sélectionner l’indicateur le plus stable face aux variations de l’ordinateur d’exploitation.
