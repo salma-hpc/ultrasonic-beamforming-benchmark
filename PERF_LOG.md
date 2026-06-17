@@ -147,17 +147,9 @@ L’implémentation finale GPU répond aux objectifs du stage avec un gain globa
 ### Comparaison temporelle et résidu
 ![Comparaison temporelle et résidu](assets/comparaison_temporelle_residu.png)
 
-### Nuage de corrélation
-![Nuage de corrélation](assets/nuage_correlation.png)
-
-### Tableau comparatif des optimisations
-![Tableau comparatif des optimisations](assets/comparaison_optimisation_tableau.png)
-
 ### Performance de reconstruction vs MATLAB
 ![Performance de reconstruction vs MATLAB](assets/performance_reconstruction_matlab.png)
 
 ### Temps d’exécution par paradigme
 ![Temps d’exécution par paradigme](assets/temps_execution_paradigmes.png)
 
-### Profilage CuPy
-![Profilage CuPy](assets/Cupy_profiling.png)
