@@ -126,9 +126,6 @@ L'implémentation finale sur l'architecture GPU répond pleinement aux objectifs
 
 ## 5. Figures de validation et de performance
 
-### Nuage de corrélation
-![Nuage de corrélation](assets/nuage_correlation.png)
-
 ### Tableau comparatif des optimisations
 ![Tableau comparatif des optimisations](assets/comparaison_optimisation_tableau.png)
 
