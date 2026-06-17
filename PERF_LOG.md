@@ -1,8 +1,7 @@
 # Journal des Performances et Suivi du Code : Micro-Beamforming
 
 - **Date de référence :** 21 mai 2026
-- **Configuration de test :** Serveur SRV07
-- **Données de test :** 1 Frame, 960 Éléments, 30 SAPs au total
+
 
 ## 1. Phase d’Exploration : Journal des Performances Initiales
 
@@ -101,6 +100,11 @@ Cette section rassemble les documents, liens officiels et présentations d’ing
 
 ## 4. Réorganisation du code et bilan final des performances
 
+### Consolidation et Architecture Logicielle
+* **Centralisation du code :** Fusion des différents scripts de recherche au sein d'une architecture unique, modulaire et simplifiée pour l'équipe.
+* **Respect du principe SRP (Responsabilité Unique) :** Séparation stricte entre les moteurs de calcul pur (fonctions d'interpolation, décodage CUDA, compilation JIT) et l'interface utilisateur.
+* **Interface unifiée :** Intégration d'une méthode de reconstruction unique permettant de basculer dynamiquement d'un moteur à un autre (références CPU, multi-threading ou accélération GPU massive).
+
 Après les essais exploratoires, les scripts ont été regroupés dans une structure plus simple et plus propre pour l’équipe.
 
 Le code a été séparé en deux fichiers :
@@ -115,23 +119,45 @@ Le script final utilise un protocole inspiré du CNES :
 
 ### Tableau comparatif après réorganisation du code
 
-Grâce à la centralisation de l’architecture, à la suppression des allocations répétitives dans les boucles et au nettoyage des variables intermédiaires, les temps de traitement ont été réduits sur tous les moteurs de calcul.
+Grâce à la centralisation de l'architecture, à la suppression des allocations répétitives dans les boucles et au nettoyage des variables intermédiaires, les temps de traitement ont été réduits sur tous les moteurs de calcul.
+
+Voici les temps mesurés sur le **Serveur SRV07 (1 Frame, 960 Éléments, 30 SAPs au total)** :
 
 | Rang | Moteur | Matériel | Temps | Speedup MATLAB | Gain vs Base | Réduction vs MATLAB |
 |---|---|---|---:|---:|---:|---:|
 | Réf | MATLAB | CPU standard | 28.87 s | 1.00x | N/A | Réf. |
-| #1 | `gpu_streams` | GPU CUDA + streams | 1.68 s | 17.17x | 12.00x | 94.2 % |
-| #2 | `gpu_block` | GPU CUDA standard | 1.75 s | 16.45x | 11.50x | 93.9 % |
-| #3 | `numpy` | CPU vectorisé | 9.14 s | 3.16x | 2.21x | 68.4 % |
-| #4 | `threads` | CPU multi-threading | 10.85 s | 2.66x | 1.86x | 62.4 % |
-| #5 | `numba` | CPU JIT parallèle | 15.88 s | 1.82x | 1.27x | 45.0 % |
-| #6 | `scipy` | CPU mono-thread | 20.18 s | 1.43x | 1.00x | 30.1 % |
+| #1 | `gpu_block` | GPU CUDA standard | 1.67 s | 17.31x | 6.33x | -94.22 % |
+| #2 | `gpu_streams` | GPU CUDA + streams | 1.71 s | 16.90x | 6.18x | -94.08 % |
+| #3 | `numba` | CPU JIT parallèle | 8.15 s | 3.54x | 1.29x | -71.75 % |
+| #4 | `numpy` | CPU vectorisé | 8.70 s | 3.32x | 1.21x | -69.85 % |
+| #5 | `threads` | CPU multi-threading | 9.25 s | 3.12x | 1.14x | -67.95 % |
+| #6 | `scipy` | CPU mono-thread | 10.55 s | 2.74x | 1.00x | -63.45 % |
 
 ### Analyse et interprétation des résultats
 
-1. **Impact du nettoyage de la structure** : la version `scipy` reste la baseline CPU propre après réorganisation.
-2. **Comparaison GPU** : `gpu_streams` obtient le meilleur temps avec **1.68 s**, légèrement devant `gpu_block`.
-3. **Comparaison CPU** : `numpy` devient le meilleur moteur CPU dans cette campagne de mesure.
-4. **Validation des données** : toutes les méthodes restent conformes à MATLAB avec une corrélation finale très élevée.
+1. **Impact du nettoyage de la structure** : la version `scipy` passe de 19.45 s à 10.55 s grâce à la réorganisation du code.
+2. **Correction du temps Numba** : le warm-up retire le coût de la compilation initiale.
+3. **Comparaison GPU** : `gpu_block` reste légèrement devant `gpu_streams` sur une seule frame.
+4. **Validation des données** : toutes les méthodes produisent des sorties conformes à MATLAB avec une corrélation finale de 0.99995.
 
-L’implémentation finale GPU répond aux objectifs du stage avec un gain global de **17.17x** par rapport à MATLAB.
+L’implémentation finale GPU répond aux objectifs du stage avec un gain global de 17.31x par rapport à la version d’origine.
+
+## 5. Figures de validation et de performance
+
+### Comparaison temporelle et résidu
+![Comparaison temporelle et résidu](assets/comparaison_temporelle_residu.png)
+
+### Nuage de corrélation
+![Nuage de corrélation](assets/nuage_correlation.png)
+
+### Tableau comparatif des optimisations
+![Tableau comparatif des optimisations](assets/comparaison_optimisation_tableau.png)
+
+### Performance de reconstruction vs MATLAB
+![Performance de reconstruction vs MATLAB](assets/performance_reconstruction_matlab.png)
+
+### Temps d’exécution par paradigme
+![Temps d’exécution par paradigme](assets/temps_execution_paradigmes.png)
+
+### Profilage CuPy
+![Profilage CuPy](assets/Cupy_profiling.png)
