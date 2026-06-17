@@ -126,13 +126,8 @@ L'implémentation finale sur l'architecture GPU répond pleinement aux objectifs
 
 ## 5. Figures de validation et de performance
 
-### Tableau comparatif des optimisations
-![Tableau comparatif des optimisations](assets/comparaison_optimisation_tableau.png)
+### Comparaison temporelle et résidu
+![Comparaison temporelle et résidu](assets/comparaison_temporelle_residu.png)
 
 ### Performance de reconstruction vs MATLAB
 ![Performance de reconstruction vs MATLAB](assets/performance_reconstruction_matlab.png)
-
-### Temps d’exécution par paradigme
-![Temps d’exécution par paradigme](assets/temps_execution_paradigmes.png)
-
-
