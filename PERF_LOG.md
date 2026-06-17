@@ -120,18 +120,18 @@ Grâce à la centralisation de l’architecture, à la suppression des allocatio
 | Rang | Moteur | Matériel | Temps | Speedup MATLAB | Gain vs Base | Réduction vs MATLAB |
 |---|---|---|---:|---:|---:|---:|
 | Réf | MATLAB | CPU standard | 28.87 s | 1.00x | N/A | Réf. |
-| #1 | `gpu_block` | GPU CUDA standard | 1.67 s | 17.31x | 6.33x | -94.22 % |
-| #2 | `gpu_streams` | GPU CUDA + streams | 1.71 s | 16.90x | 6.18x | -94.08 % |
-| #3 | `numba` | CPU JIT parallèle | 8.15 s | 3.54x | 1.29x | -71.75 % |
-| #4 | `numpy` | CPU vectorisé | 8.70 s | 3.32x | 1.21x | -69.85 % |
-| #5 | `threads` | CPU multi-threading | 9.25 s | 3.12x | 1.14x | -67.95 % |
-| #6 | `scipy` | CPU mono-thread | 10.55 s | 2.74x | 1.00x | -63.45 % |
+| #1 | `gpu_streams` | GPU CUDA + streams | 1.68 s | 17.17x | 12.00x | 94.2 % |
+| #2 | `gpu_block` | GPU CUDA standard | 1.75 s | 16.45x | 11.50x | 93.9 % |
+| #3 | `numpy` | CPU vectorisé | 9.14 s | 3.16x | 2.21x | 68.4 % |
+| #4 | `threads` | CPU multi-threading | 10.85 s | 2.66x | 1.86x | 62.4 % |
+| #5 | `numba` | CPU JIT parallèle | 15.88 s | 1.82x | 1.27x | 45.0 % |
+| #6 | `scipy` | CPU mono-thread | 20.18 s | 1.43x | 1.00x | 30.1 % |
 
 ### Analyse et interprétation des résultats
 
-1. **Impact du nettoyage de la structure** : la version `scipy` passe de 19.45 s à 10.55 s grâce à la réorganisation du code.
-2. **Correction du temps Numba** : le warm-up retire le coût de la compilation initiale.
-3. **Comparaison GPU** : `gpu_block` reste légèrement devant `gpu_streams` sur une seule frame.
-4. **Validation des données** : toutes les méthodes produisent des sorties conformes à MATLAB avec une corrélation finale de 0.99995.
+1. **Impact du nettoyage de la structure** : la version `scipy` reste la baseline CPU propre après réorganisation.
+2. **Comparaison GPU** : `gpu_streams` obtient le meilleur temps avec **1.68 s**, légèrement devant `gpu_block`.
+3. **Comparaison CPU** : `numpy` devient le meilleur moteur CPU dans cette campagne de mesure.
+4. **Validation des données** : toutes les méthodes restent conformes à MATLAB avec une corrélation finale très élevée.
 
-L’implémentation finale GPU répond aux objectifs du stage avec un gain global de 17.31x par rapport à la version d’origine.
+L’implémentation finale GPU répond aux objectifs du stage avec un gain global de **17.17x** par rapport à MATLAB.
