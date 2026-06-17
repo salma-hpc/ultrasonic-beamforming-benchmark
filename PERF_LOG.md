@@ -126,9 +126,6 @@ L'implémentation finale sur l'architecture GPU répond pleinement aux objectifs
 
 ## 5. Figures de validation et de performance
 
-### Comparaison temporelle et résidu
-![Comparaison temporelle et résidu](assets/comparaison_temporelle_residu.png)
-
 ### Nuage de corrélation
 ![Nuage de corrélation](assets/nuage_correlation.png)
 
@@ -141,5 +138,4 @@ L'implémentation finale sur l'architecture GPU répond pleinement aux objectifs
 ### Temps d’exécution par paradigme
 ![Temps d’exécution par paradigme](assets/temps_execution_paradigmes.png)
 
-### Profilage CuPy
-![Profilage CuPy](assets/Cupy_profiling.png)
+
